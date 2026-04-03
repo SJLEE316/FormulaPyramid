@@ -41,11 +41,32 @@
 
 ### 랭킹
 - 게임 종료 후 닉네임을 입력하여 온라인 랭킹에 등록할 수 있습니다
-- TOP 20 랭킹을 실시간으로 확인할 수 있습니다
+- 홈 화면에서 **랭킹 보기** 버튼으로 언제든 TOP 20 랭킹을 확인할 수 있습니다
+- **토스앱** 환경에서는 `getUserKeyForGame` API로 자동 유저 식별 후 닉네임 입력 없이 랭킹 등록됩니다
 
 ## 기술 스택
 - **Frontend**: React + TypeScript + Vite
 - **Database**: Firebase Firestore (온라인 랭킹)
+- **인앱 로그인**: `@apps-in-toss/web-framework` — `getUserKeyForGame`
+
+## 프로젝트 구조
+
+```
+src/
+├── App.tsx                   # 화면 라우팅 (home / game / ranking / ranking-page)
+├── App.css                   # 전체 스타일
+├── colors.css                # CSS 색상 변수
+├── firebase.ts               # Firebase 초기화
+├── gameLogic.ts              # 수식 생성 / 계산 / 정답 탐색
+├── hooks/
+│   └── useTossUser.ts        # 토스 게임 로그인 훅
+└── components/
+    ├── PyramidBoard.tsx       # 피라미드 칸 UI
+    ├── GameScreen.tsx         # 게임 진행 화면
+    ├── RankingList.tsx        # 공용 랭킹 테이블
+    ├── RankingScreen.tsx      # 게임 종료 후 랭킹 등록
+    └── RankingPage.tsx        # 홈에서 접근하는 랭킹 페이지
+```
 
 ## 실행 방법
 
@@ -59,3 +80,4 @@ npm run dev
 # 프로덕션 빌드
 npm run build
 ```
+

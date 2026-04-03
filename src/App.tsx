@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import GameScreen from './components/GameScreen'
 import RankingScreen from './components/RankingScreen'
+import RankingPage from './components/RankingPage'
 import { useTossUser } from './hooks/useTossUser'
 import './App.css'
 
-type Screen = 'home' | 'game' | 'ranking'
+type Screen = 'home' | 'game' | 'ranking' | 'ranking-page'
 
 function App() {
   const [screen, setScreen] = useState<Screen>('home')
@@ -30,6 +31,10 @@ function App() {
     return <RankingScreen finalScore={finalScore} userHash={userHash} onRestart={handleRestart} />
   }
 
+  if (screen === 'ranking-page') {
+    return <RankingPage onBack={() => setScreen('home')} />
+  }
+
   return (
     <div className="home-screen">
       <h1 className="home-title">수식 피라미드</h1>
@@ -46,6 +51,9 @@ function App() {
       </ul>
       <button className="start-btn" onClick={() => setScreen('game')}>
         게임 시작
+      </button>
+      <button className="ranking-page-btn" onClick={() => setScreen('ranking-page')}>
+        🏆 랭킹 보기
       </button>
     </div>
   )
