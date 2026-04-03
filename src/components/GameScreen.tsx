@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { loadFullScreenAd, showFullScreenAd } from "@apps-in-toss/web-framework";
 import PyramidBoard from "./PyramidBoard";
 import {
   type Cell,
@@ -10,6 +11,7 @@ import {
 const TOTAL_ROUNDS = 10;
 const ROUND_TIME = 120;
 const MIN_ROUND_SCORE = 3;
+const AD_GROUP_ID = "ait.dev.43daa14da3ae487b"; // TODO: 실제 adGroupId로 교체
 
 interface GameScreenProps {
   onGameEnd: (totalScore: number, eliminated: boolean) => void;
@@ -32,6 +34,10 @@ export default function GameScreen({ onGameEnd }: GameScreenProps) {
   } | null>(null);
   const [roundEnding, setRoundEnding] = useState(false);
   const [eliminated, setEliminated] = useState(false);
+  const [showRevivePrompt, setShowRevivePrompt] = useState(false);
+  const [isAdLoaded, setIsAdLoaded] = useState(false);
+  const [isAdShowing, setIsAdShowing] = useState(false);
+  const pendingTotalScoreRef = useRef(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const feedbackRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const roundScoreRef = useRef(0);
@@ -51,6 +57,19 @@ export default function GameScreen({ onGameEnd }: GameScreenProps) {
     setFeedback(null);
     setRoundEnding(false);
     console.log(`[Round ${roundNum}] Target: ${newTarget}, Answers:`, answers);
+  }, []);
+
+  // 광고 미리 로드
+  useEffect(() => {
+    if (!loadFullScreenAd.isSupported()) return;
+    const unregister = loadFullScreenAd({
+      options: { adGroupId: AD_GROUP_ID },
+      onEvent: (event) => {
+        if (event.type === "loaded") setIsAdLoaded(true);
+      },
+      onError: () => setIsAdLoaded(false),
+    });
+    return () => unregister();
   }, []);
 
   useEffect(() => {
@@ -94,10 +113,16 @@ export default function GameScreen({ onGameEnd }: GameScreenProps) {
 
       setTotalScore((total) => {
         const newTotal = total + finalRoundScore;
+        pendingTotalScoreRef.current = newTotal;
         setTimeout(() => {
           if (isEliminated) {
             setEliminated(true);
-            onGameEnd(newTotal, true);
+            // 광고 지원 시 부활 팝업, 아니면 바로 게임 종료
+            if (loadFullScreenAd.isSupported() && isAdLoaded) {
+              setShowRevivePrompt(true);
+            } else {
+              onGameEnd(newTotal, true);
+            }
           } else if (round >= TOTAL_ROUNDS) {
             onGameEnd(newTotal, false);
           } else {
@@ -110,6 +135,48 @@ export default function GameScreen({ onGameEnd }: GameScreenProps) {
     },
     [round, timeLeft, onGameEnd, startRound],
   );
+
+  const handleReviveWithAd = () => {
+    if (isAdShowing) return;
+    setIsAdShowing(true);
+    showFullScreenAd({
+      options: { adGroupId: AD_GROUP_ID },
+      onEvent: (event) => {
+        if (event.type === "dismissed" || event.type === "failedToShow") {
+          setIsAdShowing(false);
+          setShowRevivePrompt(false);
+          setEliminated(false);
+          setRoundEnding(false);
+          // 다음 광고 미리 로드
+          if (loadFullScreenAd.isSupported()) {
+            setIsAdLoaded(false);
+            loadFullScreenAd({
+              options: { adGroupId: AD_GROUP_ID },
+              onEvent: (e) => { if (e.type === "loaded") setIsAdLoaded(true); },
+              onError: () => setIsAdLoaded(false),
+            });
+          }
+          if (event.type === "dismissed") {
+            // 부활 성공 → 다음 라운드 진행
+            setRound((r) => r + 1);
+            startRound(round + 1);
+          } else {
+            // 광고 표시 실패 → 게임 종료
+            onGameEnd(pendingTotalScoreRef.current, true);
+          }
+        }
+      },
+      onError: () => {
+        setIsAdShowing(false);
+        onGameEnd(pendingTotalScoreRef.current, true);
+      },
+    });
+  };
+
+  const handleGiveUp = () => {
+    setShowRevivePrompt(false);
+    onGameEnd(pendingTotalScoreRef.current, true);
+  };
 
   const handleCellClick = (id: string) => {
     if (roundEnding) return;
@@ -253,7 +320,7 @@ export default function GameScreen({ onGameEnd }: GameScreenProps) {
         <div className={`feedback-toast ${feedback.type}`}>{feedback.msg}</div>
       )}
 
-      {roundEnding && (
+      {roundEnding && !showRevivePrompt && (
         <div className="round-end-overlay">
           <div className="round-end-box">
             {eliminated ? (
@@ -272,6 +339,30 @@ export default function GameScreen({ onGameEnd }: GameScreenProps) {
                 )}
               </>
             )}
+          </div>
+        </div>
+      )}
+
+      {showRevivePrompt && (
+        <div className="round-end-overlay">
+          <div className="revive-box">
+            <p className="revive-title">💔 탈락!</p>
+            <p className="revive-desc">
+              광고를 보면<br />탈락이 면제돼요!
+            </p>
+            <p className="revive-score">이번 라운드 {roundScore}점</p>
+            <div className="revive-buttons">
+              <button
+                className="revive-ad-btn"
+                onClick={handleReviveWithAd}
+                disabled={isAdShowing || !isAdLoaded}
+              >
+                {isAdShowing ? "광고 로딩 중..." : isAdLoaded ? "📺 광고 보고 계속하기" : "광고 준비 중..."}
+              </button>
+              <button className="revive-give-up-btn" onClick={handleGiveUp}>
+                포기하고 랭킹 보기
+              </button>
+            </div>
           </div>
         </div>
       )}

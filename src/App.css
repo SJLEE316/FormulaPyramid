@@ -436,6 +436,83 @@ body {
   color: var(--color-primary);
 }
 
+/* ===== 부활 팝업 ===== */
+.revive-box {
+  background: var(--color-surface);
+  border-radius: 28px;
+  padding: 2rem 2.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+  text-align: center;
+  box-shadow: 0 10px 40px var(--color-primary-shadow-md);
+  border: 2px solid var(--color-border);
+  max-width: 320px;
+  width: 90%;
+}
+
+.revive-title {
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: var(--color-red, #ff4d4d);
+}
+
+.revive-desc {
+  font-size: 1.1rem;
+  color: var(--color-text-dark);
+  line-height: 1.7;
+}
+
+.revive-score {
+  font-size: 0.9rem;
+  color: var(--color-text-faint);
+}
+
+.revive-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  width: 100%;
+  margin-top: 0.4rem;
+}
+
+.revive-ad-btn {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
+  color: var(--color-surface);
+  border: none;
+  border-radius: 50px;
+  padding: 0.85rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 900;
+  font-family: 'Mongtori', sans-serif;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 4px 16px var(--color-primary-shadow-lg);
+}
+
+.revive-ad-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (hover: hover) {
+  .revive-ad-btn:not(:disabled):hover {
+    transform: scale(1.04);
+  }
+}
+
+.revive-give-up-btn {
+  background: transparent;
+  color: var(--color-text-faint);
+  border: none;
+  font-size: 0.9rem;
+  font-family: 'Mongtori', sans-serif;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0.3rem;
+}
+
 /* ===== 랭킹 화면 ===== */
 .ranking-screen {
   display: flex;
