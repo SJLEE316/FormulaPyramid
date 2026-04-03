@@ -19,10 +19,11 @@ interface RankingEntry {
 
 interface RankingScreenProps {
   finalScore: number
+  userHash: string | null
   onRestart: () => void
 }
 
-export default function RankingScreen({ finalScore, onRestart }: RankingScreenProps) {
+export default function RankingScreen({ finalScore, userHash, onRestart }: RankingScreenProps) {
   const [nickname, setNickname] = useState('')
   const [submitted, setSubmitted] = useState(false)
   const [rankings, setRankings] = useState<RankingEntry[]>([])
@@ -41,22 +42,14 @@ export default function RankingScreen({ finalScore, onRestart }: RankingScreenPr
     return () => unsubscribe()
   }, [])
 
-  const handleSubmit = async () => {
-    const trimmed = nickname.trim()
-    if (!trimmed) {
-      setError('닉네임을 입력해 주세요.')
-      return
-    }
-    if (trimmed.length > 12) {
-      setError('닉네임은 12자 이하로 입력해 주세요.')
-      return
-    }
+  const submitRanking = async (name: string) => {
     setLoading(true)
     setError('')
     try {
       await addDoc(collection(db, 'rankings'), {
-        nickname: trimmed,
+        nickname: name,
         score: finalScore,
+        ...(userHash ? { userHash } : {}),
         createdAt: serverTimestamp(),
       })
       setSubmitted(true)
@@ -67,6 +60,27 @@ export default function RankingScreen({ finalScore, onRestart }: RankingScreenPr
     }
   }
 
+  // 토스앱 환경: 닉네임 입력 없이 hash로 자동 등록 (hash를 닉네임으로 축약)
+  useEffect(() => {
+    if (userHash && !submitted) {
+      const shortName = userHash.slice(0, 8)
+      submitRanking(shortName)
+    }
+  }, [userHash])
+
+  const handleSubmit = async () => {
+    const trimmed = nickname.trim()
+    if (!trimmed) {
+      setError('닉네임을 입력해 주세요.')
+      return
+    }
+    if (trimmed.length > 12) {
+      setError('닉네임은 12자 이하로 입력해 주세요.')
+      return
+    }
+    await submitRanking(trimmed)
+  }
+
   return (
     <div className="ranking-screen">
       <h2 className="ranking-title">게임 종료!</h2>
@@ -74,7 +88,11 @@ export default function RankingScreen({ finalScore, onRestart }: RankingScreenPr
         최종 점수: <strong>{finalScore}점</strong>
       </div>
 
-      {!submitted ? (
+      {userHash ? (
+        <p className="submitted-msg">
+          {submitted ? '랭킹에 등록되었습니다!' : loading ? '등록 중...' : ''}
+        </p>
+      ) : !submitted ? (
         <div className="nickname-form">
           <p>닉네임을 입력하고 랭킹에 등록하세요</p>
           <input

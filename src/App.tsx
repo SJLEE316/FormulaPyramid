@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import GameScreen from './components/GameScreen'
 import RankingScreen from './components/RankingScreen'
+import { useTossUser } from './hooks/useTossUser'
 import './App.css'
 
 type Screen = 'home' | 'game' | 'ranking'
@@ -8,6 +9,7 @@ type Screen = 'home' | 'game' | 'ranking'
 function App() {
   const [screen, setScreen] = useState<Screen>('home')
   const [finalScore, setFinalScore] = useState(0)
+  const tossUser = useTossUser()
 
   const handleGameEnd = (score: number) => {
     setFinalScore(score)
@@ -18,12 +20,14 @@ function App() {
     setScreen('home')
   }
 
+  const userHash = tossUser.status === 'hash' ? tossUser.hash : null
+
   if (screen === 'game') {
     return <GameScreen onGameEnd={handleGameEnd} />
   }
 
   if (screen === 'ranking') {
-    return <RankingScreen finalScore={finalScore} onRestart={handleRestart} />
+    return <RankingScreen finalScore={finalScore} userHash={userHash} onRestart={handleRestart} />
   }
 
   return (
