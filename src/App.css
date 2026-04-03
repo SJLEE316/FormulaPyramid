@@ -1,9 +1,13 @@
 /* ===== 공통 ===== */
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+@font-face {
+  font-family: "Mongtori";
+  src: url("/fonts/Griun_Mongtori-Rg.ttf") format("truetype");
+  font-weight: normal;
+}
 
 @font-face {
-  font-family: 'Mongtori';
-  src: url('/fonts/Griun_Mongtori-Rg.ttf') format('truetype');
+  font-family: "KOROAD";
+  src: url("/fonts/KOROAD_Bold.ttf") format("truetype");
   font-weight: normal;
 }
 
@@ -16,7 +20,7 @@
 body {
   background: var(--color-bg);
   color: var(--color-text);
-  font-family: 'Nunito', 'Segoe UI', sans-serif;
+  font-family: "KOROAD", sans-serif;
   min-height: 100vh;
 }
 
@@ -37,7 +41,7 @@ body {
   color: var(--color-primary);
   letter-spacing: 0.04em;
   text-shadow: 3px 3px 0 var(--color-title-shadow);
-  font-family: 'Mongtori', 'Nunito', sans-serif;
+  font-family: "Mongtori", sans-serif;
 }
 
 .home-desc {
@@ -64,11 +68,15 @@ body {
 }
 
 .home-rules li::before {
-  content: '🌸 ';
+  content: "🌸 ";
 }
 
 .start-btn {
-  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
+  background: linear-gradient(
+    135deg,
+    var(--color-primary),
+    var(--color-primary-light)
+  );
   color: var(--color-surface);
   border: none;
   border-radius: 50px;
@@ -76,10 +84,12 @@ body {
   font-size: 1.2rem;
   font-weight: 900;
   cursor: pointer;
-  transition: transform 0.15s, box-shadow 0.15s;
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s;
   box-shadow: 0 4px 16px var(--color-primary-shadow-lg);
   letter-spacing: 0.03em;
-  font-family: 'Mongtori', 'Nunito', sans-serif;
+  font-family: "Mongtori", sans-serif;
 }
 
 @media (hover: hover) {
@@ -97,9 +107,11 @@ body {
   padding: 0.7rem 2rem;
   font-size: 1rem;
   font-weight: 800;
-  font-family: inherit;
+  font-family: "Mongtori", sans-serif;
   cursor: pointer;
-  transition: border-color 0.2s, background 0.2s;
+  transition:
+    border-color 0.2s,
+    background 0.2s;
 }
 
 @media (hover: hover) {
@@ -165,8 +177,13 @@ body {
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 /* ===== 타겟 넘버 ===== */
@@ -223,7 +240,11 @@ body {
   border: 2.5px solid var(--color-border-cell);
   border-radius: 18px;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, transform 0.12s, box-shadow 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    transform 0.12s,
+    box-shadow 0.15s;
   gap: 2px;
   box-shadow: 0 2px 8px var(--color-primary-shadow);
 }
@@ -238,14 +259,22 @@ body {
 }
 
 .pyramid-cell.selected {
-  background: linear-gradient(135deg, var(--color-blue-bg), var(--color-blue-bg-deep));
+  background: linear-gradient(
+    135deg,
+    var(--color-blue-bg),
+    var(--color-blue-bg-deep)
+  );
   border-color: var(--color-blue);
   box-shadow: 0 0 14px var(--color-blue-shadow);
   transform: scale(1.06);
 }
 
 .pyramid-cell.solved {
-  background: linear-gradient(135deg, var(--color-green-bg), var(--color-green-bg-deep));
+  background: linear-gradient(
+    135deg,
+    var(--color-green-bg),
+    var(--color-green-bg-deep)
+  );
   border-color: var(--color-green);
   box-shadow: 0 2px 8px var(--color-green-shadow);
 }
@@ -293,10 +322,12 @@ body {
   border-radius: 50px;
   padding: 0.3rem 1rem;
   font-size: 0.85rem;
-  font-family: inherit;
+  font-family: "Mongtori", sans-serif;
   font-weight: 800;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
 }
 
 @media (hover: hover) {
@@ -356,9 +387,20 @@ body {
   color: var(--color-surface);
 }
 
+.feedback-toast.duplicate {
+  background: linear-gradient(135deg, #f0a030, #e08020);
+  color: var(--color-surface);
+}
+
 @keyframes toastIn {
-  from { opacity: 0; transform: translate(-50%, -60%) scale(0.8); }
-  to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  from {
+    opacity: 0;
+    transform: translate(-50%, -60%) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
 }
 
 /* ===== 라운드 종료 오버레이 ===== */
@@ -409,6 +451,7 @@ body {
   font-weight: 900;
   color: var(--color-primary);
   text-shadow: 2px 2px 0 var(--color-title-shadow);
+  font-family: "Mongtori", sans-serif;
 }
 
 .final-score-display {
@@ -448,7 +491,9 @@ body {
   font-family: inherit;
   font-weight: 700;
   outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
 .nickname-input:focus {
@@ -463,16 +508,22 @@ body {
 }
 
 .submit-btn {
-  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
+  background: linear-gradient(
+    135deg,
+    var(--color-primary),
+    var(--color-primary-light)
+  );
   color: var(--color-surface);
   border: none;
   border-radius: 50px;
   padding: 0.8rem 2.5rem;
   font-size: 1rem;
   font-weight: 900;
-  font-family: inherit;
+  font-family: "Mongtori", sans-serif;
   cursor: pointer;
-  transition: transform 0.15s, box-shadow 0.15s;
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s;
   box-shadow: 0 4px 16px var(--color-primary-shadow-md);
 }
 
@@ -492,6 +543,13 @@ body {
   color: var(--color-green);
   font-weight: 800;
   font-size: 1rem;
+}
+
+.elim-msg {
+  font-size: 0.9rem;
+  color: var(--color-red, #ff4d4d);
+  font-weight: 700;
+  margin-bottom: 0.3rem;
 }
 
 .ranking-list {
@@ -547,9 +605,19 @@ body {
   font-weight: 900;
 }
 
-.ranking-list tr:nth-child(1) td:first-child { color: var(--color-gold); font-weight: 900; font-size: 1.1rem; }
-.ranking-list tr:nth-child(2) td:first-child { color: var(--color-silver); font-weight: 800; }
-.ranking-list tr:nth-child(3) td:first-child { color: var(--color-bronze); font-weight: 800; }
+.ranking-list tr:nth-child(1) td:first-child {
+  color: var(--color-gold);
+  font-weight: 900;
+  font-size: 1.1rem;
+}
+.ranking-list tr:nth-child(2) td:first-child {
+  color: var(--color-silver);
+  font-weight: 800;
+}
+.ranking-list tr:nth-child(3) td:first-child {
+  color: var(--color-bronze);
+  font-weight: 800;
+}
 
 .restart-btn {
   background: var(--color-surface);
@@ -558,10 +626,13 @@ body {
   border-radius: 50px;
   padding: 0.7rem 2rem;
   font-size: 1rem;
-  font-family: inherit;
+  font-family: "Mongtori", sans-serif;
   font-weight: 800;
   cursor: pointer;
-  transition: border-color 0.2s, color 0.2s, transform 0.15s;
+  transition:
+    border-color 0.2s,
+    color 0.2s,
+    transform 0.15s;
 }
 
 @media (hover: hover) {

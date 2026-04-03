@@ -1,33 +1,47 @@
-import { useState, useEffect } from 'react'
-import { db } from '../firebase'
-import { collection, query, orderBy, limit, onSnapshot } from 'firebase/firestore'
+import { useState, useEffect } from "react";
+import { db } from "../firebase";
+import {
+  collection,
+  query,
+  orderBy,
+  limit,
+  onSnapshot,
+} from "firebase/firestore";
 
 interface RankingEntry {
-  id: string
-  nickname: string
-  score: number
+  id: string;
+  nickname: string;
+  score: number;
+  userHash?: string;
 }
 
 interface RankingListProps {
-  highlightHash?: string | null
-  highlightScore?: number
+  highlightHash?: string | null;
+  highlightScore?: number;
 }
 
-export default function RankingList({ highlightHash, highlightScore }: RankingListProps) {
-  const [rankings, setRankings] = useState<RankingEntry[]>([])
+export default function RankingList({
+  highlightHash,
+  highlightScore,
+}: RankingListProps) {
+  const [rankings, setRankings] = useState<RankingEntry[]>([]);
 
   useEffect(() => {
-    const q = query(collection(db, 'rankings'), orderBy('score', 'desc'), limit(20))
+    const q = query(
+      collection(db, "rankings"),
+      orderBy("score", "desc"),
+      limit(20),
+    );
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setRankings(
         snapshot.docs.map((doc) => ({
           id: doc.id,
-          ...(doc.data() as Omit<RankingEntry, 'id'>),
-        }))
-      )
-    })
-    return () => unsubscribe()
-  }, [])
+          ...(doc.data() as Omit<RankingEntry, "id">),
+        })),
+      );
+    });
+    return () => unsubscribe();
+  }, []);
 
   return (
     <div className="ranking-list">
@@ -45,18 +59,20 @@ export default function RankingList({ highlightHash, highlightScore }: RankingLi
             const isMe =
               highlightScore !== undefined &&
               entry.score === highlightScore &&
-              (highlightHash ? entry.nickname === highlightHash.slice(0, 8) : false)
+              (highlightHash
+                ? entry.id === highlightHash || entry.userHash === highlightHash
+                : false);
             return (
-              <tr key={entry.id} className={isMe ? 'my-rank' : ''}>
+              <tr key={entry.id} className={isMe ? "my-rank" : ""}>
                 <td>{idx + 1}</td>
                 <td>{entry.nickname}</td>
                 <td>{entry.score}점</td>
               </tr>
-            )
+            );
           })}
           {rankings.length === 0 && (
             <tr>
-              <td colSpan={3} style={{ color: '#c9a0dc', padding: '1rem' }}>
+              <td colSpan={3} style={{ color: "#c9a0dc", padding: "1rem" }}>
                 아직 기록이 없어요!
               </td>
             </tr>
@@ -64,5 +80,5 @@ export default function RankingList({ highlightHash, highlightScore }: RankingLi
         </tbody>
       </table>
     </div>
-  )
+  );
 }
