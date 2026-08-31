@@ -1,5 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { loadFullScreenAd, showFullScreenAd } from "@apps-in-toss/web-framework";
+import {
+  loadFullScreenAd,
+  showFullScreenAd,
+} from "@apps-in-toss/web-framework";
 import PyramidBoard from "./PyramidBoard";
 import {
   type Cell,
@@ -61,7 +64,11 @@ export default function GameScreen({ onGameEnd }: GameScreenProps) {
 
   // 광고 미리 로드
   useEffect(() => {
-    if (!loadFullScreenAd.isSupported()) return;
+    if (
+      typeof loadFullScreenAd?.isSupported !== "function" ||
+      !loadFullScreenAd.isSupported()
+    )
+      return;
     const unregister = loadFullScreenAd({
       options: { adGroupId: AD_GROUP_ID },
       onEvent: (event) => {
@@ -118,7 +125,11 @@ export default function GameScreen({ onGameEnd }: GameScreenProps) {
           if (isEliminated) {
             setEliminated(true);
             // 광고 지원 시 부활 팝업, 아니면 바로 게임 종료
-            if (loadFullScreenAd.isSupported() && isAdLoaded) {
+            if (
+              typeof loadFullScreenAd?.isSupported === "function" &&
+              loadFullScreenAd.isSupported() &&
+              isAdLoaded
+            ) {
               setShowRevivePrompt(true);
             } else {
               onGameEnd(newTotal, true);
@@ -148,11 +159,16 @@ export default function GameScreen({ onGameEnd }: GameScreenProps) {
           setEliminated(false);
           setRoundEnding(false);
           // 다음 광고 미리 로드
-          if (loadFullScreenAd.isSupported()) {
+          if (
+            typeof loadFullScreenAd?.isSupported === "function" &&
+            loadFullScreenAd.isSupported()
+          ) {
             setIsAdLoaded(false);
             loadFullScreenAd({
               options: { adGroupId: AD_GROUP_ID },
-              onEvent: (e) => { if (e.type === "loaded") setIsAdLoaded(true); },
+              onEvent: (e) => {
+                if (e.type === "loaded") setIsAdLoaded(true);
+              },
               onError: () => setIsAdLoaded(false),
             });
           }
@@ -348,7 +364,9 @@ export default function GameScreen({ onGameEnd }: GameScreenProps) {
           <div className="revive-box">
             <p className="revive-title">💔 탈락!</p>
             <p className="revive-desc">
-              광고를 보면<br />탈락이 면제돼요!
+              광고를 보면
+              <br />
+              탈락이 면제돼요!
             </p>
             <p className="revive-score">이번 라운드 {roundScore}점</p>
             <div className="revive-buttons">
@@ -357,7 +375,11 @@ export default function GameScreen({ onGameEnd }: GameScreenProps) {
                 onClick={handleReviveWithAd}
                 disabled={isAdShowing || !isAdLoaded}
               >
-                {isAdShowing ? "광고 로딩 중..." : isAdLoaded ? "📺 광고 보고 계속하기" : "광고 준비 중..."}
+                {isAdShowing
+                  ? "광고 로딩 중..."
+                  : isAdLoaded
+                    ? "📺 광고 보고 계속하기"
+                    : "광고 준비 중..."}
               </button>
               <button className="revive-give-up-btn" onClick={handleGiveUp}>
                 포기하고 랭킹 보기
