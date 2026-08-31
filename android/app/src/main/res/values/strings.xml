@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">수식 피라미드</string>
+    <string name="title_activity_main">수식 피라미드</string>
+    <string name="package_name">com.formulapyramid.app</string>
+    <string name="custom_url_scheme">com.formulapyramid.app</string>
+</resources>
