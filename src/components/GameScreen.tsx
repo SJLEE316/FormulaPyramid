@@ -3,6 +3,7 @@ import {
   loadFullScreenAd,
   showFullScreenAd,
 } from "@apps-in-toss/web-framework";
+import { isNativeApp } from "../utils/environment";
 import PyramidBoard from "./PyramidBoard";
 import {
   type Cell,
@@ -62,8 +63,9 @@ export default function GameScreen({ onGameEnd }: GameScreenProps) {
     console.log(`[Round ${roundNum}] Target: ${newTarget}, Answers:`, answers);
   }, []);
 
-  // 광고 미리 로드
+  // 광고 미리 로드 (토스인앱 전용)
   useEffect(() => {
+    if (isNativeApp()) return; // 네이티브 앱 환경에서는 광고 미사용
     if (
       typeof loadFullScreenAd?.isSupported !== "function" ||
       !loadFullScreenAd.isSupported()
@@ -124,8 +126,10 @@ export default function GameScreen({ onGameEnd }: GameScreenProps) {
         setTimeout(() => {
           if (isEliminated) {
             setEliminated(true);
-            // 광고 지원 시 부활 팝업, 아니면 바로 게임 종료
+            // 네이티브 앱 환경에서는 광고 없이 바로 게임 종료
+            // 토스인앱에서는 광고 지원 시 부활 팝업, 아니면 바로 게임 종료
             if (
+              !isNativeApp() &&
               typeof loadFullScreenAd?.isSupported === "function" &&
               loadFullScreenAd.isSupported() &&
               isAdLoaded
