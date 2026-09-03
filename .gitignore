@@ -24,3 +24,5 @@ dist-ssr
 *.sw?
 
 .granite
+android/app/google-services.json
+ios/App/CapApp-SPM/GoogleService-Info.plist
