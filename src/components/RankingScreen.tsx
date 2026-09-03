@@ -40,13 +40,14 @@ export default function RankingScreen({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [isNewRecord, setIsNewRecord] = useState(false);
+  const [tossNeedsNickname, setTossNeedsNickname] = useState(false);
   const hasAutoSubmitted = useRef(false);
 
-  // 토스인앱: userHash 기반 자동 등록
+  // 토스인앱: userHash 기반. 기존 유저면 자동 등록, 최초 유저면 닉네임 입력 요구
   useEffect(() => {
     if (!userHash || hasAutoSubmitted.current) return;
     hasAutoSubmitted.current = true;
-    submitWithHash(userHash);
+    checkAndSubmitWithHash(userHash);
   }, [userHash]);
 
   // 네이티브 앱: Firebase UID 기반 자동 등록
@@ -56,8 +57,8 @@ export default function RankingScreen({
     submitWithUid(appUserInfo.uid, appUserInfo.displayName);
   }, [appUserInfo]);
 
-  /** 토스인앱 전용: 해시를 문서 ID로 사용, 최고점만 갱신 */
-  const submitWithHash = async (hash: string) => {
+  /** 토스인앱 전용: 기존 등록 유저면 최고점만 갱신, 최초 유저면 닉네임 입력 폼 노출 */
+  const checkAndSubmitWithHash = async (hash: string) => {
     setLoading(true);
     setError("");
     try {
@@ -78,21 +79,38 @@ export default function RankingScreen({
           );
           setIsNewRecord(true);
         }
+        setSubmitted(true);
       } else {
-        await setDoc(docRef, {
-          nickname: `토스유저_${hash.slice(-4)}`,
-          score: finalScore,
-          userHash: hash,
-          createdAt: serverTimestamp(),
-        });
+        setTossNeedsNickname(true);
       }
-      setSubmitted(true);
     } catch (e) {
       setError("등록 중 오류가 발생했습니다.");
     } finally {
       setLoading(false);
     }
   };
+
+  /** 토스인앱 최초 유저 전용: 닉네임과 함께 최초 등록 */
+  const submitTossNickname = async (name: string) => {
+    if (!userHash) return;
+    setLoading(true);
+    setError("");
+    try {
+      await setDoc(doc(db, "rankings", userHash), {
+        nickname: name,
+        score: finalScore,
+        userHash,
+        createdAt: serverTimestamp(),
+      });
+      setSubmitted(true);
+      setTossNeedsNickname(false);
+    } catch (e) {
+      setError("등록 중 오류가 발생했습니다. 다시 시도해 주세요.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   /** 네이티브 앱 전용: Firebase UID를 문서 ID로 사용, 최고점만 갱신 */
   const submitWithUid = async (uid: string, displayName: string) => {
@@ -158,7 +176,11 @@ export default function RankingScreen({
       setError("닉네임은 12자 이하로 입력해 주세요.");
       return;
     }
-    await submitRanking(trimmed);
+    if (tossNeedsNickname) {
+      await submitTossNickname(trimmed);
+    } else {
+      await submitRanking(trimmed);
+    }
   };
 
   // 네이티브 앱 + 비로그인 상태 → 로그인 유도 UI
@@ -176,8 +198,30 @@ export default function RankingScreen({
         최종 점수: <strong>{finalScore}점</strong>
       </div>
 
-      {/* 토스인앱: 자동 등록 상태 표시 */}
-      {userHash ? (
+      {/* 토스인앱 최초 유저: 닉네임 입력 폼 */}
+      {userHash && tossNeedsNickname ? (
+        <div className="nickname-form">
+          <p>랭킹에 사용할 닉네임을 입력해 주세요</p>
+          <input
+            className="nickname-input"
+            type="text"
+            placeholder="닉네임 입력 (최대 12자)"
+            value={nickname}
+            onChange={(e) => setNickname(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+            maxLength={12}
+          />
+          {error && <p className="input-error">{error}</p>}
+          <button
+            className="submit-btn"
+            onClick={handleSubmit}
+            disabled={loading}
+          >
+            {loading ? "등록 중..." : "랭킹 등록"}
+          </button>
+        </div>
+      ) : /* 토스인앱 기존 유저: 자동 등록 상태 표시 */
+      userHash ? (
         <p className="submitted-msg">
           {loading
             ? "랭킹 등록 중..."
