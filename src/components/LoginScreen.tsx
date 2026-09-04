@@ -1,3 +1,5 @@
+import GoogleSignInButton from "./GoogleSignInButton";
+
 interface LoginScreenProps {
   loading: boolean;
   onSignIn: () => void;
@@ -13,9 +15,7 @@ export default function LoginScreen({ loading, onSignIn, onSkip }: LoginScreenPr
         <br />
         랭킹에 기록을 남길 수 있어요!
       </p>
-      <button className="start-btn" onClick={onSignIn} disabled={loading}>
-        {loading ? "확인 중..." : "🔐 구글로 로그인"}
-      </button>
+      <GoogleSignInButton loading={loading} onClick={onSignIn} />
       <button className="ranking-page-btn" onClick={onSkip} disabled={loading}>
         게스트로 시작하기
       </button>
