@@ -58,7 +58,11 @@ function App() {
   };
 
   const handleSignOut = async () => {
-    await appUser.signOut();
+    const success = await appUser.signOut();
+    if (success) {
+      alert("로그아웃되었습니다.");
+      setScreen("login");
+    }
   };
 
   const handleNicknameSubmit = async (name: string) => {

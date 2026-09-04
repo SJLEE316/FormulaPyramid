@@ -19,7 +19,7 @@ export type AppUserState =
 export interface UseAppUserReturn {
   state: AppUserState;
   signIn: () => Promise<void>;
-  signOut: () => Promise<void>;
+  signOut: () => Promise<boolean>;
 }
 
 /**
@@ -62,8 +62,10 @@ export function useAppUser(): UseAppUserReturn {
         await FirebaseAuthentication.signOut();
       }
       await firebaseSignOut(auth);
+      return true;
     } catch (e) {
       console.error("로그아웃 실패:", e);
+      return false;
     }
   };
 
