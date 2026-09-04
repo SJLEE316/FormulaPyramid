@@ -16,13 +16,9 @@ interface RankingEntry {
 
 interface RankingListProps {
   highlightId?: string | null;
-  highlightScore?: number;
 }
 
-export default function RankingList({
-  highlightId,
-  highlightScore,
-}: RankingListProps) {
+export default function RankingList({ highlightId }: RankingListProps) {
   const [rankings, setRankings] = useState<RankingEntry[]>([]);
 
   useEffect(() => {
@@ -55,11 +51,7 @@ export default function RankingList({
         </thead>
         <tbody>
           {rankings.map((entry, idx) => {
-            const isMe =
-              highlightScore !== undefined &&
-              entry.score === highlightScore &&
-              !!highlightId &&
-              entry.id === highlightId;
+            const isMe = !!highlightId && entry.id === highlightId;
             return (
               <tr key={entry.id} className={isMe ? "my-rank" : ""}>
                 <td>{idx + 1}</td>

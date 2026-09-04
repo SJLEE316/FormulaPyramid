@@ -104,10 +104,7 @@ export default function RankingScreen({
         </p>
       )}
 
-      <RankingList
-        highlightId={userId}
-        highlightScore={submitted ? finalScore : undefined}
-      />
+      <RankingList highlightId={userId} />
 
       <button className="restart-btn" onClick={onRestart}>
         다시 하기

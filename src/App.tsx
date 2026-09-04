@@ -119,7 +119,7 @@ function App() {
   }
 
   if (screen === "ranking-page") {
-    return <RankingPage onBack={() => setScreen("home")} />;
+    return <RankingPage onBack={() => setScreen("home")} userId={identityId} />;
   }
 
   return (
