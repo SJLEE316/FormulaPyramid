@@ -518,6 +518,53 @@ body {
   }
 }
 
+/* ===== 로그아웃 토스트 ===== */
+.logout-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 8%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.9rem 1.8rem;
+  border-radius: 50px;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
+  color: var(--color-surface);
+  font-size: 1rem;
+  font-weight: 700;
+  box-shadow: 0 8px 24px var(--color-primary-shadow-lg);
+  z-index: 200;
+  pointer-events: none;
+  animation: logoutToastIn 0.25s ease, logoutToastOut 0.3s ease 1.5s forwards;
+}
+
+.logout-toast-icon {
+  font-size: 1.1rem;
+}
+
+@keyframes logoutToastIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 12px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@keyframes logoutToastOut {
+  from {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, 12px);
+  }
+}
+
 /* ===== 라운드 종료 오버레이 ===== */
 .round-end-overlay {
   position: fixed;

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import GameScreen from "./components/GameScreen";
 import HomeScreen from "./components/HomeScreen";
 import LoginScreen from "./components/LoginScreen";
@@ -23,6 +23,7 @@ function App() {
   const [eliminated, setEliminated] = useState(false);
   const [signingIn, setSigningIn] = useState(false);
   const [nicknameSubmitting, setNicknameSubmitting] = useState(false);
+  const [showLogoutToast, setShowLogoutToast] = useState(false);
 
   // 환경에 따라 유저 훅 분기
   const tossUser = useTossUser(); // 네이티브 앱에서는 즉시 fallback 반환
@@ -60,10 +61,17 @@ function App() {
   const handleSignOut = async () => {
     const success = await appUser.signOut();
     if (success) {
-      alert("로그아웃되었습니다.");
+      setShowLogoutToast(true);
       setScreen("login");
     }
   };
+
+  // 로그인 화면 진입 후 잠깐 보여주고 사라지는 토스트
+  useEffect(() => {
+    if (!showLogoutToast) return;
+    const timer = setTimeout(() => setShowLogoutToast(false), 1800);
+    return () => clearTimeout(timer);
+  }, [showLogoutToast]);
 
   const handleNicknameSubmit = async (name: string) => {
     setNicknameSubmitting(true);
@@ -82,31 +90,27 @@ function App() {
     setScreen("home");
   };
 
+  let content: ReactNode;
+
   if (screen === "login") {
-    return (
+    content = (
       <LoginScreen
         loading={signingIn || appUser.state.status === "loading"}
         onSignIn={handleSignIn}
         onSkip={() => setScreen("home")}
       />
     );
-  }
-
-  if (screen === "nickname-setup") {
-    return (
+  } else if (screen === "nickname-setup") {
+    content = (
       <NicknameSetupScreen
         loading={nicknameSubmitting}
         onSubmit={handleNicknameSubmit}
       />
     );
-  }
-
-  if (screen === "game") {
-    return <GameScreen onGameEnd={handleGameEnd} />;
-  }
-
-  if (screen === "ranking") {
-    return (
+  } else if (screen === "game") {
+    content = <GameScreen onGameEnd={handleGameEnd} />;
+  } else if (screen === "ranking") {
+    content = (
       <RankingScreen
         finalScore={finalScore}
         eliminated={eliminated}
@@ -116,20 +120,31 @@ function App() {
         onRestart={handleRestart}
       />
     );
-  }
-
-  if (screen === "ranking-page") {
-    return <RankingPage onBack={() => setScreen("home")} userId={identityId} />;
+  } else if (screen === "ranking-page") {
+    content = <RankingPage onBack={() => setScreen("home")} userId={identityId} />;
+  } else {
+    content = (
+      <HomeScreen
+        onStart={() => setScreen("game")}
+        onRanking={() => setScreen("ranking-page")}
+        isSignedIn={googleUid !== null}
+        onSignOut={handleSignOut}
+      />
+    );
   }
 
   return (
-    <HomeScreen
-      onStart={() => setScreen("game")}
-      onRanking={() => setScreen("ranking-page")}
-      isSignedIn={googleUid !== null}
-      onSignOut={handleSignOut}
-    />
+    <>
+      {content}
+      {showLogoutToast && (
+        <div className="logout-toast">
+          <span className="logout-toast-icon">👋</span>
+          로그아웃되었습니다
+        </div>
+      )}
+    </>
   );
 }
 
 export default App;
+
