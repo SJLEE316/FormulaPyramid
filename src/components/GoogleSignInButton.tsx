@@ -36,7 +36,7 @@ export default function GoogleSignInButton({ loading, onClick }: GoogleSignInBut
           </svg>
         </div>
         <span className="gsi-material-button-contents">
-          {loading ? "확인 중..." : "Sign in with Google"}
+          {loading ? "확인 중..." : "Google 계정으로 로그인"}
         </span>
       </div>
     </button>
