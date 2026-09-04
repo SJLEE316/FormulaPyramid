@@ -12,16 +12,15 @@ interface RankingEntry {
   id: string;
   nickname: string;
   score: number;
-  userHash?: string;
 }
 
 interface RankingListProps {
-  highlightHash?: string | null;
+  highlightId?: string | null;
   highlightScore?: number;
 }
 
 export default function RankingList({
-  highlightHash,
+  highlightId,
   highlightScore,
 }: RankingListProps) {
   const [rankings, setRankings] = useState<RankingEntry[]>([]);
@@ -59,9 +58,8 @@ export default function RankingList({
             const isMe =
               highlightScore !== undefined &&
               entry.score === highlightScore &&
-              (highlightHash
-                ? entry.id === highlightHash || entry.userHash === highlightHash
-                : false);
+              !!highlightId &&
+              entry.id === highlightId;
             return (
               <tr key={entry.id} className={isMe ? "my-rank" : ""}>
                 <td>{idx + 1}</td>
