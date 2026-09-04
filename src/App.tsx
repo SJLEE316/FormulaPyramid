@@ -57,6 +57,10 @@ function App() {
     setSigningIn(false);
   };
 
+  const handleSignOut = async () => {
+    await appUser.signOut();
+  };
+
   const handleNicknameSubmit = async (name: string) => {
     setNicknameSubmitting(true);
     await registerNickname(name);
@@ -118,6 +122,8 @@ function App() {
     <HomeScreen
       onStart={() => setScreen("game")}
       onRanking={() => setScreen("ranking-page")}
+      isSignedIn={googleUid !== null}
+      onSignOut={handleSignOut}
     />
   );
 }

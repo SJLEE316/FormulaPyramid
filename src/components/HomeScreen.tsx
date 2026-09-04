@@ -1,9 +1,16 @@
 interface HomeScreenProps {
   onStart: () => void;
   onRanking: () => void;
+  isSignedIn?: boolean;
+  onSignOut?: () => void;
 }
 
-export default function HomeScreen({ onStart, onRanking }: HomeScreenProps) {
+export default function HomeScreen({
+  onStart,
+  onRanking,
+  isSignedIn,
+  onSignOut,
+}: HomeScreenProps) {
   return (
     <div className="home-screen">
       <h1 className="home-title">수식 피라미드</h1>
@@ -31,6 +38,11 @@ export default function HomeScreen({ onStart, onRanking }: HomeScreenProps) {
       <button className="ranking-page-btn" onClick={onRanking}>
         🏆 랭킹 보기
       </button>
+      {isSignedIn && (
+        <button className="logout-btn" onClick={onSignOut}>
+          로그아웃
+        </button>
+      )}
     </div>
   );
 }

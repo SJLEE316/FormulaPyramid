@@ -121,6 +121,18 @@ body {
   }
 }
 
+.logout-btn {
+  background: none;
+  border: none;
+  color: var(--color-text-faint);
+  font-size: 0.85rem;
+  font-weight: 700;
+  font-family: "Mongtori", sans-serif;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
 /* ===== 게임 화면 ===== */
 .game-screen {
   display: flex;
@@ -686,6 +698,18 @@ body {
   background: var(--color-primary-bg);
   color: var(--color-primary);
   font-weight: 900;
+}
+
+.my-rank-badge {
+  display: inline-block;
+  margin-left: 0.4rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 50px;
+  background: var(--color-primary);
+  color: var(--color-surface);
+  font-size: 0.7rem;
+  font-weight: 800;
+  vertical-align: middle;
 }
 
 .ranking-list tr:nth-child(1) td:first-child {

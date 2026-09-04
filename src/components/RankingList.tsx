@@ -63,7 +63,10 @@ export default function RankingList({
             return (
               <tr key={entry.id} className={isMe ? "my-rank" : ""}>
                 <td>{idx + 1}</td>
-                <td>{entry.nickname}</td>
+                <td>
+                  {entry.nickname}
+                  {isMe && <span className="my-rank-badge">내 기록</span>}
+                </td>
                 <td>{entry.score}점</td>
               </tr>
             );
