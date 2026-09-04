@@ -12,18 +12,13 @@ interface RankingEntry {
   id: string;
   nickname: string;
   score: number;
-  userHash?: string;
 }
 
 interface RankingListProps {
-  highlightHash?: string | null;
-  highlightScore?: number;
+  highlightId?: string | null;
 }
 
-export default function RankingList({
-  highlightHash,
-  highlightScore,
-}: RankingListProps) {
+export default function RankingList({ highlightId }: RankingListProps) {
   const [rankings, setRankings] = useState<RankingEntry[]>([]);
 
   useEffect(() => {
@@ -56,16 +51,14 @@ export default function RankingList({
         </thead>
         <tbody>
           {rankings.map((entry, idx) => {
-            const isMe =
-              highlightScore !== undefined &&
-              entry.score === highlightScore &&
-              (highlightHash
-                ? entry.id === highlightHash || entry.userHash === highlightHash
-                : false);
+            const isMe = !!highlightId && entry.id === highlightId;
             return (
               <tr key={entry.id} className={isMe ? "my-rank" : ""}>
                 <td>{idx + 1}</td>
-                <td>{entry.nickname}</td>
+                <td>
+                  {entry.nickname}
+                  {isMe && <span className="my-rank-badge">내 기록</span>}
+                </td>
                 <td>{entry.score}점</td>
               </tr>
             );

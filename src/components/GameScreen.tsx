@@ -3,7 +3,7 @@ import {
   loadFullScreenAd,
   showFullScreenAd,
 } from "@apps-in-toss/web-framework";
-import { isNativeApp } from "../utils/environment";
+import { isNativeApp, isTossInApp } from "../utils/environment";
 import PyramidBoard from "./PyramidBoard";
 import {
   type Cell,
@@ -16,6 +16,19 @@ const TOTAL_ROUNDS = 10;
 const ROUND_TIME = 120;
 const MIN_ROUND_SCORE = 3;
 const AD_GROUP_ID = "ait.dev.43daa14da3ae487b"; // TODO: 실제 adGroupId로 교체
+
+// 토스인앱이 아니면 isSupported() 호출 자체가 네이티브 브릿지 부재로 예외를 던지므로 안전하게 가드
+function isAdSupported(): boolean {
+  if (!isTossInApp()) return false;
+  try {
+    return (
+      typeof loadFullScreenAd?.isSupported === "function" &&
+      loadFullScreenAd.isSupported()
+    );
+  } catch {
+    return false;
+  }
+}
 
 interface GameScreenProps {
   onGameEnd: (totalScore: number, eliminated: boolean) => void;
@@ -66,11 +79,7 @@ export default function GameScreen({ onGameEnd }: GameScreenProps) {
   // 광고 미리 로드 (토스인앱 전용)
   useEffect(() => {
     if (isNativeApp()) return; // 네이티브 앱 환경에서는 광고 미사용
-    if (
-      typeof loadFullScreenAd?.isSupported !== "function" ||
-      !loadFullScreenAd.isSupported()
-    )
-      return;
+    if (!isAdSupported()) return;
     const unregister = loadFullScreenAd({
       options: { adGroupId: AD_GROUP_ID },
       onEvent: (event) => {
@@ -128,12 +137,7 @@ export default function GameScreen({ onGameEnd }: GameScreenProps) {
             setEliminated(true);
             // 네이티브 앱 환경에서는 광고 없이 바로 게임 종료
             // 토스인앱에서는 광고 지원 시 부활 팝업, 아니면 바로 게임 종료
-            if (
-              !isNativeApp() &&
-              typeof loadFullScreenAd?.isSupported === "function" &&
-              loadFullScreenAd.isSupported() &&
-              isAdLoaded
-            ) {
+            if (!isNativeApp() && isAdSupported() && isAdLoaded) {
               setShowRevivePrompt(true);
             } else {
               onGameEnd(newTotal, true);
@@ -163,10 +167,7 @@ export default function GameScreen({ onGameEnd }: GameScreenProps) {
           setEliminated(false);
           setRoundEnding(false);
           // 다음 광고 미리 로드
-          if (
-            typeof loadFullScreenAd?.isSupported === "function" &&
-            loadFullScreenAd.isSupported()
-          ) {
+          if (isAdSupported()) {
             setIsAdLoaded(false);
             loadFullScreenAd({
               options: { adGroupId: AD_GROUP_ID },

@@ -1,25 +1,84 @@
-import { useState } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import GameScreen from "./components/GameScreen";
 import HomeScreen from "./components/HomeScreen";
+import LoginScreen from "./components/LoginScreen";
+import NicknameSetupScreen from "./components/NicknameSetupScreen";
 import RankingScreen from "./components/RankingScreen";
 import RankingPage from "./components/RankingPage";
 import { useTossUser } from "./hooks/useTossUser";
 import { useAppUser } from "./hooks/useAppUser";
+import { useNickname } from "./hooks/useNickname";
 import { isNativeApp } from "./utils/environment";
 import "./App.css";
 
-type Screen = "home" | "game" | "ranking" | "ranking-page";
+type Screen = "login" | "nickname-setup" | "home" | "game" | "ranking" | "ranking-page";
 
 function App() {
-  const [screen, setScreen] = useState<Screen>("home");
+  const nativeApp = isNativeApp();
+  // 네이티브 앱은 홈 진입 전 로그인 화면부터 시작 (게스트 스킵 가능)
+  const [screen, setScreen] = useState<Screen>(() => (nativeApp ? "login" : "home"));
+  // 닉네임 설정 완료 후 되돌아갈 화면
+  const [pendingScreen, setPendingScreen] = useState<Screen>("home");
   const [finalScore, setFinalScore] = useState(0);
   const [eliminated, setEliminated] = useState(false);
+  const [signingIn, setSigningIn] = useState(false);
+  const [nicknameSubmitting, setNicknameSubmitting] = useState(false);
+  const [showLogoutToast, setShowLogoutToast] = useState(false);
 
   // 환경에 따라 유저 훅 분기
   const tossUser = useTossUser(); // 네이티브 앱에서는 즉시 fallback 반환
-  const appUser = useAppUser();   // Firebase Auth (네이티브 앱 환경에서 실제 사용)
+  const appUser = useAppUser();   // Firebase Auth (구글 로그인, 네이티브/웹 공용)
 
-  const nativeApp = isNativeApp();
+  // 토스인앱: 해시 기반 / 그 외(네이티브 앱, 일반 웹): 구글 로그인 UID 기반
+  const userHash = !nativeApp && tossUser.status === "hash" ? tossUser.hash : null;
+  const googleUid = appUser.state.status === "signed-in" ? appUser.state.user.uid : null;
+  const identityId = userHash ?? googleUid;
+
+  // 닉네임은 개인정보(구글 실명) 노출을 피하기 위해 별도 저장하고 한 번 설정하면 수정 불가
+  const { nickname, registerNickname } = useNickname(identityId);
+
+  // 이미 로그인되어 있으면(세션 유지) 로그인 화면을 건너뜀
+  useEffect(() => {
+    if (screen === "login" && appUser.state.status === "signed-in") {
+      setScreen("home");
+    }
+  }, [screen, appUser.state.status]);
+
+  // 로그인된 유저(토스/구글)가 닉네임을 아직 설정하지 않았다면 닉네임 설정 화면으로 유도
+  useEffect(() => {
+    if (identityId && nickname === null && (screen === "home" || screen === "ranking")) {
+      setPendingScreen(screen);
+      setScreen("nickname-setup");
+    }
+  }, [identityId, nickname, screen]);
+
+  const handleSignIn = async () => {
+    setSigningIn(true);
+    await appUser.signIn();
+    setSigningIn(false);
+  };
+
+  const handleSignOut = async () => {
+    const success = await appUser.signOut();
+    if (success) {
+      setShowLogoutToast(true);
+      setScreen("login");
+    }
+  };
+
+  // 로그인 화면 진입 후 잠깐 보여주고 사라지는 토스트
+  useEffect(() => {
+    if (!showLogoutToast) return;
+    const timer = setTimeout(() => setShowLogoutToast(false), 1800);
+    return () => clearTimeout(timer);
+  }, [showLogoutToast]);
+
+  const handleNicknameSubmit = async (name: string) => {
+    setNicknameSubmitting(true);
+    await registerNickname(name);
+    setNicknameSubmitting(false);
+    setScreen(pendingScreen);
+  };
 
   const handleGameEnd = (score: number, isEliminated: boolean) => {
     setFinalScore(score);
@@ -31,40 +90,61 @@ function App() {
     setScreen("home");
   };
 
-  // 토스인앱: 해시 기반 / 네이티브 앱: Firebase UID 기반
-  const userHash = !nativeApp && tossUser.status === "hash" ? tossUser.hash : null;
-  const appUserInfo =
-    nativeApp && appUser.state.status === "signed-in"
-      ? { uid: appUser.state.user.uid, displayName: appUser.state.user.displayName ?? "앱유저" }
-      : null;
+  let content: ReactNode;
 
-  if (screen === "game") {
-    return <GameScreen onGameEnd={handleGameEnd} />;
-  }
-
-  if (screen === "ranking") {
-    return (
+  if (screen === "login") {
+    content = (
+      <LoginScreen
+        loading={signingIn || appUser.state.status === "loading"}
+        onSignIn={handleSignIn}
+        onSkip={() => setScreen("home")}
+      />
+    );
+  } else if (screen === "nickname-setup") {
+    content = (
+      <NicknameSetupScreen
+        loading={nicknameSubmitting}
+        onSubmit={handleNicknameSubmit}
+      />
+    );
+  } else if (screen === "game") {
+    content = <GameScreen onGameEnd={handleGameEnd} />;
+  } else if (screen === "ranking") {
+    content = (
       <RankingScreen
         finalScore={finalScore}
         eliminated={eliminated}
-        userHash={userHash}
-        appUserInfo={appUserInfo}
-        onSignIn={nativeApp ? appUser.signIn : undefined}
+        userId={identityId}
+        nickname={nickname ?? null}
+        onSignIn={identityId ? undefined : handleSignIn}
         onRestart={handleRestart}
+      />
+    );
+  } else if (screen === "ranking-page") {
+    content = <RankingPage onBack={() => setScreen("home")} userId={identityId} />;
+  } else {
+    content = (
+      <HomeScreen
+        onStart={() => setScreen("game")}
+        onRanking={() => setScreen("ranking-page")}
+        isSignedIn={googleUid !== null}
+        onSignOut={handleSignOut}
       />
     );
   }
 
-  if (screen === "ranking-page") {
-    return <RankingPage onBack={() => setScreen("home")} />;
-  }
-
   return (
-    <HomeScreen
-      onStart={() => setScreen("game")}
-      onRanking={() => setScreen("ranking-page")}
-    />
+    <>
+      {content}
+      {showLogoutToast && (
+        <div className="logout-toast">
+          <span className="logout-toast-icon">👋</span>
+          로그아웃되었습니다
+        </div>
+      )}
+    </>
   );
 }
 
 export default App;
+
