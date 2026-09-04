@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { db } from "../firebase";
 import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
 import RankingList from "./RankingList";
+import GoogleSignInButton from "./GoogleSignInButton";
 
 interface RankingScreenProps {
   finalScore: number;
@@ -87,9 +88,7 @@ export default function RankingScreen({
       {!userId ? (
         <div className="nickname-form">
           <p>로그인 후 랭킹에 등록할 수 있어요</p>
-          <button className="submit-btn" onClick={onSignIn}>
-            🔐 구글 로그인으로 랭킹 등록
-          </button>
+          <GoogleSignInButton loading={false} onClick={onSignIn ?? (() => {})} />
           <p className="login-skip-msg">로그인하지 않으면 랭킹에 등록되지 않습니다.</p>
         </div>
       ) : (
