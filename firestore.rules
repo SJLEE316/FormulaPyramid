@@ -1,0 +1,46 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // users/{identityId}: { nickname, createdAt }
+    // 닉네임은 최초 1회만 생성 가능, 이후 수정/삭제 금지 (불변 강제)
+    match /users/{userId} {
+      allow read: if true;
+
+      allow create: if request.resource.data.keys().hasOnly(['nickname', 'createdAt'])
+        && request.resource.data.nickname is string
+        && request.resource.data.nickname.size() > 0
+        && request.resource.data.nickname.size() <= 20
+        // 구글 로그인 유저는 반드시 본인 uid 문서에만 생성 가능
+        // (토스 앱 환경은 Firebase Auth 없이 유저 해시만 사용하므로 auth 기반 검증 불가 — 알려진 한계)
+        && (request.auth == null || request.auth.uid == userId);
+
+      allow update, delete: if false;
+    }
+
+    // rankings/{identityId}: { nickname, score, createdAt/updatedAt }
+    match /rankings/{userId} {
+      allow read: if true;
+
+      allow create: if request.resource.data.keys().hasOnly(['nickname', 'score', 'createdAt'])
+        && request.resource.data.nickname is string
+        && request.resource.data.score is number
+        && (request.auth == null || request.auth.uid == userId);
+
+      // 점수는 갱신(경신) 가능하지만, 더 낮은 점수로 덮어쓰거나 다른 필드 변조는 금지
+      allow update: if request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['nickname', 'score', 'updatedAt'])
+        && request.resource.data.score is number
+        && request.resource.data.score > resource.data.score
+        && (request.auth == null || request.auth.uid == userId);
+
+      allow delete: if false;
+    }
+
+    // 그 외 문서는 기본 차단
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
