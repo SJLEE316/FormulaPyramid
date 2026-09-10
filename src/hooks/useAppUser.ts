@@ -43,7 +43,11 @@ export function useAppUser(): UseAppUserReturn {
     try {
       if (Capacitor.isNativePlatform()) {
         // 네이티브 WebView는 스토리지 파티셔닝으로 popup/redirect 로그인이 불가능 → 네이티브 Google Sign-In 사용
-        const result = await FirebaseAuthentication.signInWithGoogle();
+        // useCredentialManager: false → 레거시 인텐트 방식 사용
+        // Credential Manager API는 특정 환경에서 "GetCredentialResponse error" 발생
+        const result = await FirebaseAuthentication.signInWithGoogle({
+          useCredentialManager: false,
+        });
         const idToken = result.credential?.idToken;
         if (!idToken) throw new Error("Google idToken을 받지 못했습니다.");
         const credential = GoogleAuthProvider.credential(idToken);
