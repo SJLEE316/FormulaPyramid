@@ -15,7 +15,7 @@ import {
 const TOTAL_ROUNDS = 10;
 const ROUND_TIME = 120;
 const MIN_ROUND_SCORE = 3;
-const AD_GROUP_ID = "ait.dev.43daa14da3ae487b"; // TODO: 실제 adGroupId로 교체
+const AD_GROUP_ID = "ait-ad-test-rewarded-id"; // TODO: 실제 adGroupId로 교체
 
 // 토스인앱이 아니면 isSupported() 호출 자체가 네이티브 브릿지 부재로 예외를 던지므로 안전하게 가드
 function isAdSupported(): boolean {
